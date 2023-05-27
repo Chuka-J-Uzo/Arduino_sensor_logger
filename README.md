@@ -2,30 +2,31 @@ Arduino board type: 'Arduino Uno'
 Arduino version: '1.8.19'
 
 Arduino board info: 
-'''	
-	BN: Arduino Uno
-	VID: 2341
-	PID: 0043
-	SN: 55736303939351106231
-'''
+
+`BN: Arduino Uno`
+`VID: 2341`
+`PID: 0043`
+`SN: 55736303939351106231`
+
 
 
 
 ### Installation steps:
 
 - Install Arduino firmware to our Ubuntu computer.
-	sudo apt install arduino
+	`sudo apt install arduino`
 
 - Give 'dialout' elevated permissions.
-	sudo usermod -aG dialout blackjack
+	`sudo usermod -aG dialout blackjack`
 
 - Install PySerial: used to establish a serial connection and communicate with the Arduino from Python.
-	pip install pyserial
+	`pip install pyserial`
 
 - Install libcanberra-gtk-module.	
-	sudo apt-get install libcanberra-gtk-module
+	`sudo apt-get install libcanberra-gtk-module`
 
-	pip install dash redis
+- Install dash and redis in Python
+	`pip install dash redis`
 
 
 

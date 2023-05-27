@@ -1,0 +1,137 @@
+version: "3.6"
+services:
+  kafka-container:
+    command:
+      - "/etc/kafka/server.properties"
+    container_name: "kafka-container"
+    entrypoint:
+      - "entrypoint.sh"
+    environment:
+      - "TZ=UTC"
+      - "KAFKA_ADVERTISED_HOST_NAME=host.docker.internal"
+      - "KAFKA_ADVERTISED_PORT=9092"
+      - "ZOOKEEPER_HOST=host.docker.internal"
+      - "PATH=/opt/kafka/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      - "ZOOKEEPER_PORT=2181"
+    expose:
+      - "9092/tcp"
+    hostname: "your_host_name"
+    image: "ubuntu/kafka:latest"
+    ipc: "private"
+    labels:
+      maintainer: "Ubuntu Server team <ubuntu-server@lists.ubuntu.com>"
+      org.opencontainers.image.ref.name: "ubuntu"
+      org.opencontainers.image.version: "22.04"
+    logging:
+      driver: "json-file"
+      options: {}
+    network_mode: "host"
+    volumes:
+      - "volume-STREAM-IUBH:/data_streaming_project"
+
+
+
+  redis-container:
+    command:
+      - "redis-server"
+      - "--save"
+      - "60"
+      - "1"
+      - "--loglevel"
+      - "warning"
+    container_name: "redis-container"
+    entrypoint:
+      - "docker-entrypoint.sh"
+    environment:
+      - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      - "GOSU_VERSION=1.16"
+      - "REDIS_VERSION=7.0.11"
+      - "REDIS_DOWNLOAD_URL=http://download.redis.io/releases/redis-7.0.11.tar.gz"
+      - "REDIS_DOWNLOAD_SHA=ce250d1fba042c613de38a15d40889b78f7cb6d5461a27e35017ba39b07221e3"
+    expose:
+      - "6379/tcp"
+    hostname: "1a3c1424c749"
+    image: "redis"
+    ipc: "private"
+    logging:
+      driver: "json-file"
+      options: {}
+    mac_address: "02:42:ac:11:00:03"
+    network_mode: "bridge"
+    volumes:
+      - "c25d845c72cca2b967d12ea3f695e9f5ea1b1ddb69f3d1d0d53b4c98f1ea4c15:/data"
+    working_dir: "/data"
+  
+  
+
+  redisinsights:
+    command:
+      - "python"
+      - "entry.pyc"
+    container_name: "redisinsights"
+    entrypoint:
+      - "bash"
+      - "./docker-entry.sh"
+    environment:
+      - "PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      - "LANG=C.UTF-8"
+      - "GPG_KEY=A035C8C19219BA821ECEA86B64E628F8D684696D"
+      - "PYTHON_VERSION=3.11.0rc2"
+      - "PYTHON_PIP_VERSION=22.2.2"
+      - "PYTHON_SETUPTOOLS_VERSION=63.2.0"
+      - "PYTHON_GET_PIP_URL=https://github.com/pypa/get-pip/raw/5eaac1050023df1f5c98b173b248c260023f2278/public/get-pip.py"
+      - "PYTHON_GET_PIP_SHA256=5aefe6ade911d997af080b315ebcb7f882212d070465df544e1175ac2be519b4"
+      - "PIP_DISABLE_PIP_VERSION_CHECK=1"
+      - "PIP_NO_CACHE_DIR=1"
+      - "APP_PLATFORM=docker"
+    hostname: "b96f4f909d0d"
+    image: "redislabs/redisinsight:latest"
+    ipc: "private"
+    logging:
+      driver: "json-file"
+      options: {}
+    mac_address: "02:42:ac:11:00:04"
+    network_mode: "bridge"
+    ports:
+      - "8001:8001/tcp"
+    user: "redisinsight"
+    volumes:
+      - "redisinsight:/db"
+    working_dir: "/app"
+  
+  
+  
+  zookeeper-container:
+    command:
+      - "/etc/kafka/zookeeper.properties"
+    container_name: "zookeeper-container"
+    entrypoint:
+      - "/opt/kafka/bin/zookeeper-server-start.sh"
+    environment:
+      - "TZ=UTC"
+      - "PATH=/opt/kafka/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    hostname: "b46154020da4"
+    image: "ubuntu/zookeeper:latest"
+    ipc: "private"
+    labels:
+      maintainer: "Ubuntu Server team <ubuntu-server@lists.ubuntu.com>"
+      org.opencontainers.image.ref.name: "ubuntu"
+      org.opencontainers.image.version: "22.04"
+    logging:
+      driver: "json-file"
+      options: {}
+    networks:
+      - "kafka-net"
+    ports:
+      - "2181:2181/tcp"
+networks:
+  kafka-net:
+    external: true
+    name: "kafka-net"
+volumes:
+  c25d845c72cca2b967d12ea3f695e9f5ea1b1ddb69f3d1d0d53b4c98f1ea4c15:
+    external: true
+  redisinsight:
+    external: true
+  volume-STREAM-IUBH:
+    external: true

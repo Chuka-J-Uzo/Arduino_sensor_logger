@@ -32,18 +32,23 @@ Arduino board info:
 ### Installation steps:
 
 - Install Arduino firmware to our Ubuntu computer.
+
 	`sudo apt install arduino`
 
 - Give 'dialout' elevated permissions.
+
 	`sudo usermod -aG dialout blackjack`
 
 - Install PySerial: used to establish a serial connection and communicate with the Arduino from Python.
+
 	`pip install pyserial`
 
 - Install libcanberra-gtk-module.	
+
 	`sudo apt-get install libcanberra-gtk-module`
 
 - Install dash and redis in Python
+
 	`pip install dash redis`
 
 
@@ -97,9 +102,70 @@ Timestamp: 2023-05-28 01:35:09 Sensor Value: 231
 
 ```
 
-### Visualizing the logs with DASH
+### Streaming the Arduino light sensor logs to Confluent Kafka (our message broker service).
 
-We use the code below to visualize the logs streamed from the light sensors to Kafka broker and then to Redis (a NoSQL DB)
+Here, we use the code in the python file called `kafka_main_logger.py` below to stream our logs from Kafka, then domicile it in Redis for further analysis.
+
+```
+from confluent_kafka import Producer
+import json
+import serial
+import csv
+import redis
+from datetime import datetime
+
+serial_port = '/dev/ttyACM0'  # Replace with the appropriate serial port on your computer
+baud_rate = 9600
+
+serial_connection = serial.Serial(serial_port, baud_rate)
+
+producer = Producer({
+    'bootstrap.servers': 'localhost:9092',
+    'acks': 'all',
+    'queue.buffering.max.messages': 2000000,
+    'queue.buffering.max.kbytes': 3000000,
+    'partitioner': 'consistent',
+    'message.send.max.retries': '5',
+    'request.required.acks': '-1',
+    'compression.type': 'lz4',
+    'compression.level': '6'
+})
+
+redis_host = "172.17.0.2"
+redis_port = 6379
+redis_db = redis.Redis(host=redis_host, port=redis_port, db=0)
+redis_key = "KAFKA_DB2:light_sensor_data"
+
+csv_file = open('sensor_data.csv', 'w', newline='')
+csv_writer = csv.writer(csv_file)
+
+while True:
+    if serial_connection.in_waiting > 0:
+        sensor_value = serial_connection.readline().strip().decode('utf-8')
+        timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')  # Get current timestamp
+        csv_writer.writerow([timestamp, sensor_value])
+        print("Timestamp:", timestamp, "Sensor Value:", sensor_value)
+
+        # Create a JSON payload with the timestamp and sensor value
+        payload = json.dumps({'timestamp': timestamp, 'sensor_value': sensor_value}).encode('utf-8')
+
+        # Send the payload to the Kafka topic
+        producer.produce('Light-Sensor', value=payload)
+
+        # Store the sensor value in Redis
+        redis_db.rpush(redis_key, sensor_value)
+
+        # Flush the producer to ensure the message is sent
+        producer.flush()
+
+csv_file.close()
+serial_connection.close()
+
+```
+
+### Visualizing the logs with DASH framework
+
+We use the code in the python file called `dash_visualizer.py` below to visualize the logs streamed from the light sensors to Kafka broker and then to Redis (a NoSQL DB)
 
 ```
 import time
@@ -308,7 +374,7 @@ if __name__ == '__main__':
 ```
 
 
-![PYTHON_DASH](./img_assets/arduino_code_editor.png "PYTHON_DASH") <br>
+![PYTHON_DASH](./img_assets/operation.png "PYTHON_DASH") <br>
 *Left> Python printing the logs from the light sensor to the console. Right> Real-time charting of Redis DB where logs are sent.*
 <br>
 

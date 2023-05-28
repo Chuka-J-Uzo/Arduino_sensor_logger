@@ -22,7 +22,7 @@ producer = Producer({
     'compression.level': '6'
 })
 
-redis_host = "172.17.0.3"
+redis_host = "172.17.0.2"
 redis_port = 6379
 redis_db = redis.Redis(host=redis_host, port=redis_port, db=0)
 redis_key = "KAFKA_DB2:light_sensor_data"

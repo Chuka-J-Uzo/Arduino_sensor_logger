@@ -8,8 +8,13 @@ Arduino board info:
 `PID: 0043`
 `SN: 55736303939351106231`
 
+![ARDUINO KIT](./img_assets/Arduino_ondesk.jpg "ARDUINO KIT") <br>
+*Arduino UNO kit used for the project. Notice the dome-shaped light sensor attached to the board*
+<br>
 
-
+![ARDUINO CODE-EDITOR](./img_assets/arduino_code_editor.png "ARDUINO CODE-EDITOR") <br>
+*Arduino UNO kit's Code Editor*
+<br>
 
 ### Installation steps:
 

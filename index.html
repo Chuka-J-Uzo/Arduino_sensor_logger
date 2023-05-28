@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    table {
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid black;
+      padding: 8px;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <table id="stockTable">
+    <tr>
+      <th>Date</th>
+      <th>Price</th>
+    </tr>
+    <tr>
+      <td>2023-05-01</td>
+      <td>100</td>
+    </tr>
+    <tr>
+      <td>2023-05-02</td>
+      <td>110</td>
+    </tr>
+    <tr>
+      <td>2023-05-03</td>
+      <td>120</td>
+    </tr>
+    <!-- Add more rows as needed -->
+  </table>
+  
+  <canvas id="chart"></canvas>
+
+  <script>
+    // Retrieve the stock prices from the table
+    const table = document.getElementById('stockTable');
+    const rows = table.getElementsByTagName('tr');
+    const data = [];
+    
+    for (let i = 1; i < rows.length; i++) {
+      const cells = rows[i].getElementsByTagName('td');
+      const date = cells[0].innerText;
+      const price = parseFloat(cells[1].innerText);
+      data.push({ date, price });
+    }
+
+    // Create the chart
+    const chartCanvas = document.getElementById('chart');
+    const ctx = chartCanvas.getContext('2d');
+    
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.map(item => item.date),
+        datasets: [{
+          label: 'Stock Price',
+          data: data.map(item => item.price),
+          backgroundColor: 'rgba(0, 123, 255, 0.4)',
+          borderColor: 'rgba(0, 123, 255, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

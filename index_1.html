@@ -15,10 +15,8 @@
       <select id="chartTypeSelect">
         <option value="line">Line Chart</option>
         <option value="bar">Bar Chart</option>
-        <option value="radar">Radar Chart</option>
-        <option value="polarArea">Polar Area Chart</option>
-        <option value="pie">Pie Chart</option>
-        <option value="doughnut">Doughnut Chart</option>
+        <option value="area">Area Chart</option>
+        <option value="scatter">Scatter Plot</option>
       </select>
     </div>
     <div>
@@ -32,6 +30,14 @@
     <div>
       <label for="yAxisLabelInput">Y-Axis Label:</label>
       <input type="text" id="yAxisLabelInput">
+    </div>
+    <div>
+      <label for="dependentSelect">Dependent Variable(s):</label>
+      <select id="dependentSelect" multiple></select>
+    </div>
+    <div>
+      <label for="independentSelect">Independent Variable(s):</label>
+      <select id="independentSelect" multiple></select>
     </div>
     <hr>
     <button id="saveChartBtn">Save Chart as PNG</button>
@@ -49,6 +55,7 @@
       const chartCanvas = document.getElementById('chartCanvas');
       const legendContainer = document.getElementById('legendContainer');
       let chart = null;
+      let data = null;
 
       function createChart(labels, datasets, chartType, chartTitle, xAxisLabel, yAxisLabel) {
         const ctx = chartCanvas.getContext('2d');
@@ -83,8 +90,11 @@
               text: chartTitle
             },
             legend: {
+              display: true,
               position: 'right',
-              onClick: null
+              labels: {
+                usePointStyle: true
+              }
             }
           }
         };
@@ -109,30 +119,23 @@
 
         reader.onload = function(e) {
           const csv = e.target.result;
-          const data = Papa.parse(csv, { header: true }).data;
+          data = Papa.parse(csv, { header: true }).data;
 
           // Extract labels and datasets from the CSV data
           const labels = Object.keys(data[0]).filter(key => key !== '');
-          const datasets = [];
+          const dependentSelect = document.getElementById('dependentSelect');
+          const independentSelect = document.getElementById('independentSelect');
+
+          dependentSelect.innerHTML = '';
+          independentSelect.innerHTML = '';
 
           for (const label of labels) {
-            const dataset = {
-              label: label,
-              data: data.map(row => parseFloat(row[label])),
-              borderColor: getRandomColor(),
-              backgroundColor: 'transparent'
-            };
-
-            datasets.push(dataset);
+            const option = document.createElement('option');
+            option.value = label;
+            option.text = label;
+            dependentSelect.appendChild(option);
+            independentSelect.appendChild(option.cloneNode(true));
           }
-
-          const chartTypeSelect = document.getElementById('chartTypeSelect');
-          const chartType = chartTypeSelect.value;
-          const chartTitle = document.getElementById('chartTitleInput').value;
-          const xAxisLabel = document.getElementById('xAxisLabelInput').value;
-          const yAxisLabel = document.getElementById('yAxisLabelInput').value;
-
-          createChart(labels, datasets, chartType, chartTitle, xAxisLabel, yAxisLabel);
         };
 
         reader.readAsText(file);
@@ -191,8 +194,57 @@
         const xAxisLabel = document.getElementById('xAxisLabelInput').value;
         const yAxisLabel = document.getElementById('yAxisLabelInput').value;
 
-        createChart(chart.data.labels, chart.data.datasets, chartType, chartTitle, xAxisLabel, yAxisLabel);
+        if (data !== null) {
+          updateChart(chartType, chartTitle, xAxisLabel, yAxisLabel);
+        }
       });
+
+      // Dependent and independent variable select event listener
+      const dependentSelect = document.getElementById('dependentSelect');
+      const independentSelect = document.getElementById('independentSelect');
+      dependentSelect.addEventListener('change', updateChartSelection);
+      independentSelect.addEventListener('change', updateChartSelection);
+
+      function updateChartSelection() {
+        const dependentVariables = Array.from(dependentSelect.selectedOptions, option => option.value);
+        const independentVariables = Array.from(independentSelect.selectedOptions, option => option.value);
+        const chartType = chartTypeSelect.value;
+        const chartTitle = document.getElementById('chartTitleInput').value;
+        const xAxisLabel = document.getElementById('xAxisLabelInput').value;
+        const yAxisLabel = document.getElementById('yAxisLabelInput').value;
+
+        if (data !== null) {
+          const labels = Object.keys(data[0]).filter(key => key !== '');
+
+          const datasets = [];
+
+          for (const variable of dependentVariables) {
+            const dataset = {
+              label: variable,
+              data: data.map(row => parseFloat(row[variable])),
+              backgroundColor: getRandomColor(),
+              borderColor: getRandomColor(),
+              fill: false
+            };
+
+            datasets.push(dataset);
+          }
+
+          for (const variable of independentVariables) {
+            const dataset = {
+              label: variable,
+              data: data.map(row => parseFloat(row[variable])),
+              backgroundColor: getRandomColor(),
+              borderColor: getRandomColor(),
+              fill: false
+            };
+
+            datasets.push(dataset);
+          }
+
+          createChart(labels, datasets, chartType, chartTitle, xAxisLabel, yAxisLabel);
+        }
+      }
 
       // Helper function to generate random colors for datasets
       function getRandomColor() {

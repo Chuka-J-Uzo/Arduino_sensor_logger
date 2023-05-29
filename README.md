@@ -2,6 +2,10 @@
 
 The script is a visualization tool for real-time Arduino sensor data using a message broker (Kafka) and a data store (Redis). It leverages the Dash framework to create an interactive web-based dashboard that provides visualizations and insights into the sensor readings. The project employs Kafka as a message broker to facilitate the seamless transfer of sensor data from the Arduino device to the script. By using Kafka, the script can handle high volumes of data and ensure reliable message delivery, enabling real-time monitoring and analysis of the sensor readings.
 
+![ARDUINO KIT](./img_assets/Arduino_ondesk.jpg "ARDUINO KIT") <br>
+*Arduino UNO kit used for the project. Notice the dome-shaped light sensor attached to the board*
+<br>
+
 Redis, on the other hand, is utilized as a data store for storing the sensor data received from Kafka. Redis is an in-memory database that offers fast read and write operations, making it suitable for real-time applications. The script stores the sensor values in Redis, allowing efficient retrieval and processing of the data for visualization purposes. Redis's key-value store architecture provides a convenient way to store and retrieve sensor readings, enabling quick access to historical data and supporting real-time updates of the visualizations.
 
 The project integrates Kafka as a message broker for seamless data transfer and leverages Redis as a fast and efficient data store. Together, these technologies enable real-time visualization and analysis of Arduino sensor data, empowering users to gain insights and make informed decisions based on the real-time sensor readings.
@@ -20,9 +24,6 @@ Arduino board info:
 `PID: 0043`
 `SN: 55736303939351106231`
 
-![ARDUINO KIT](./img_assets/Arduino_ondesk.jpg "ARDUINO KIT") <br>
-*Arduino UNO kit used for the project. Notice the dome-shaped light sensor attached to the board*
-<br>
 
 ![ARDUINO CODE-EDITOR](./img_assets/arduino_code_editor.png "ARDUINO CODE-EDITOR") <br>
 *Arduino UNO kit's Code Editor*

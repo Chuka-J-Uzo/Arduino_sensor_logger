@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chart Generator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+</head>
+<body>
+  <div>
+    <h1>Chart Generator</h1>
+    <input type="file" id="csvFileInput" accept=".csv">
+    <hr>
+    <div>
+      <label for="chartTypeSelect">Chart Type:</label>
+      <select id="chartTypeSelect">
+        <option value="line">Line Chart</option>
+        <option value="bar">Bar Chart</option>
+        <option value="radar">Radar Chart</option>
+        <option value="polarArea">Polar Area Chart</option>
+        <option value="pie">Pie Chart</option>
+        <option value="doughnut">Doughnut Chart</option>
+      </select>
+    </div>
+    <div>
+      <label for="chartTitleInput">Chart Title:</label>
+      <input type="text" id="chartTitleInput">
+    </div>
+    <div>
+      <label for="xAxisLabelInput">X-Axis Label:</label>
+      <input type="text" id="xAxisLabelInput">
+    </div>
+    <div>
+      <label for="yAxisLabelInput">Y-Axis Label:</label>
+      <input type="text" id="yAxisLabelInput">
+    </div>
+    <hr>
+    <button id="saveChartBtn">Save Chart as PNG</button>
+    <button id="saveChartJPEGBtn">Save Chart as JPEG</button>
+    <button id="shareLinkedInBtn">Share Chart on LinkedIn</button>
+    <button id="shareTwitterBtn">Share Chart on Twitter</button>
+    <button id="shareURLBtn">Get Shareable URL</button>
+  </div>
+  <div>
+    <canvas id="chartCanvas"></canvas>
+    <div id="legendContainer"></div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const chartCanvas = document.getElementById('chartCanvas');
+      const legendContainer = document.getElementById('legendContainer');
+      let chart = null;
+
+      function createChart(labels, datasets, chartType, chartTitle, xAxisLabel, yAxisLabel) {
+        const ctx = chartCanvas.getContext('2d');
+
+        const chartData = {
+          labels: labels,
+          datasets: datasets
+        };
+
+        const chartOptions = {
+          responsive: true,
+          scales: {
+            x: {
+              display: true,
+              title: {
+                display: true,
+                text: xAxisLabel || ''
+              }
+            },
+            y: {
+              display: true,
+              title: {
+                display: true,
+                text: yAxisLabel || ''
+              },
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            title: {
+              display: true,
+              text: chartTitle
+            },
+            legend: {
+              position: 'right',
+              onClick: null
+            }
+          }
+        };
+
+        if (chart !== null) {
+          chart.destroy(); // Destroy the previous chart if it exists
+        }
+
+        chart = new Chart(ctx, {
+          type: chartType,
+          data: chartData,
+          options: chartOptions
+        });
+
+        // Generate legend HTML and update the legend container
+        legendContainer.innerHTML = chart.generateLegend();
+      }
+
+      function handleFileLoad(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+
+        reader.onload = function(e) {
+          const csv = e.target.result;
+          const data = Papa.parse(csv, { header: true }).data;
+
+          // Extract labels and datasets from the CSV data
+          const labels = Object.keys(data[0]).filter(key => key !== '');
+          const datasets = [];
+
+          for (const label of labels) {
+            const dataset = {
+              label: label,
+              data: data.map(row => parseFloat(row[label])),
+              borderColor: getRandomColor(),
+              backgroundColor: 'transparent'
+            };
+
+            datasets.push(dataset);
+          }
+
+          const chartTypeSelect = document.getElementById('chartTypeSelect');
+          const chartType = chartTypeSelect.value;
+          const chartTitle = document.getElementById('chartTitleInput').value;
+          const xAxisLabel = document.getElementById('xAxisLabelInput').value;
+          const yAxisLabel = document.getElementById('yAxisLabelInput').value;
+
+          createChart(labels, datasets, chartType, chartTitle, xAxisLabel, yAxisLabel);
+        };
+
+        reader.readAsText(file);
+      }
+
+      // Listen for file input change event
+      const fileInput = document.getElementById('csvFileInput');
+      fileInput.addEventListener('change', handleFileLoad);
+
+      // Save chart as image (PNG and JPEG)
+      const saveChartBtn = document.getElementById('saveChartBtn');
+      saveChartBtn.addEventListener('click', function() {
+        const downloadLink = document.createElement('a');
+        downloadLink.href = chartCanvas.toDataURL('image/png');
+        downloadLink.download = 'chart.png';
+        downloadLink.click();
+      });
+
+      const saveChartJPEGBtn = document.getElementById('saveChartJPEGBtn');
+      saveChartJPEGBtn.addEventListener('click', function() {
+        const downloadLink = document.createElement('a');
+        downloadLink.href = chartCanvas.toDataURL('image/jpeg');
+        downloadLink.download = 'chart.jpeg';
+        downloadLink.click();
+      });
+
+      // Share chart on LinkedIn
+      const shareLinkedInBtn = document.getElementById('shareLinkedInBtn');
+      shareLinkedInBtn.addEventListener('click', function() {
+        const chartImageURL = chartCanvas.toDataURL('image/png');
+        // Implement sharing to LinkedIn functionality
+        console.log('Sharing chart on LinkedIn:', chartImageURL);
+      });
+
+      // Share chart on Twitter
+      const shareTwitterBtn = document.getElementById('shareTwitterBtn');
+      shareTwitterBtn.addEventListener('click', function() {
+        const chartImageURL = chartCanvas.toDataURL('image/png');
+        // Implement sharing to Twitter functionality
+        console.log('Sharing chart on Twitter:', chartImageURL);
+      });
+
+      // Get shareable URL
+      const shareURLBtn = document.getElementById('shareURLBtn');
+      shareURLBtn.addEventListener('click', function() {
+        const pageURL = window.location.href;
+        // Implement getting shareable URL functionality
+        console.log('Shareable URL:', pageURL);
+      });
+
+      // Chart type select event listener
+      const chartTypeSelect = document.getElementById('chartTypeSelect');
+      chartTypeSelect.addEventListener('change', function() {
+        const chartType = this.value;
+        const chartTitle = document.getElementById('chartTitleInput').value;
+        const xAxisLabel = document.getElementById('xAxisLabelInput').value;
+        const yAxisLabel = document.getElementById('yAxisLabelInput').value;
+
+        createChart(chart.data.labels, chart.data.datasets, chartType, chartTitle, xAxisLabel, yAxisLabel);
+      });
+
+      // Helper function to generate random colors for datasets
+      function getRandomColor() {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+
+        for (let i = 0; i < 6; i++) {
+          color += letters[Math.floor(Math.random() * 16)];
+        }
+
+        return color;
+      }
+    });
+  </script>
+</body>
+</html>
